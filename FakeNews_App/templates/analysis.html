@@ -137,18 +137,6 @@
         </main>
     </div>
 
-    <!-- Menu burger JavaScript -->
-    <script>
-        // Toggle navigation menu
-        const navToggle = document.querySelector('.nav-toggle');
-        const navMenu = document.querySelector('.nav-menu');
-
-        navToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-            navToggle.classList.toggle('active');
-        });
-    </script>
-
     <script src="{{ url_for('static', filename='app.js') }}"></script>
     <script src="{{ url_for('static', filename='floating-images.js') }}"></script>
 </body>
