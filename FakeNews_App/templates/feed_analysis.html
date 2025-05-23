@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumalien - Analyse de Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="nav-title">Thumalien</a>
+            <button class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Retour à l'accueil</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <!-- En-tête du feed -->
+        <div class="feed-header">
+            <div class="feed-info">
+                {% if feed.feed_info.avatar %}
+                <img src="{{ feed.feed_info.avatar }}" alt="{{ feed.feed_info.name }}" class="feed-avatar">
+                {% endif %}
+                <div class="feed-details">
+                    <h1 class="feed-title">{{ feed.feed_info.name }}</h1>
+                    <p class="feed-description">{{ feed.feed_info.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques globales -->
+        <div class="global-stats">
+            <h2 class="section-title">Analyse globale du feed</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ feed.stats.fake_news_probability }}%</div>
+                    <p class="stat-text">Probabilité moyenne de fake news</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ feed.stats.sentiment_score }}</div>
+                    <p class="stat-text">Score moyen de sentiment</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ feed.stats.controversy_index }}</div>
+                    <p class="stat-text">Indice moyen de controverse</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ feed.stats.reliability_score }}%</div>
+                    <p class="stat-text">Score moyen de fiabilité</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des posts -->
+        <div class="posts-container">
+            <h2 class="section-title">Analyse des 10 derniers posts</h2>
+            {% for post in feed.posts %}
+            <div class="post-analysis">
+                <div class="post-content">
+                    <div class="post-header">
+                        {% if post.author.avatar %}
+                        <img src="{{ post.author.avatar }}" alt="{{ post.author.display_name }}" class="author-avatar">
+                        {% endif %}
+                        <div class="author-info">
+                            <h3 class="author-name">{{ post.author.display_name }}</h3>
+                            <p class="author-handle">@{{ post.author.handle }}</p>
+                        </div>
+                        <span class="post-date">{{ post.created_at }}</span>
+                    </div>
+                    <div class="post-text">
+                        {{ post.content }}
+                    </div>
+                    {% if post.images %}
+                    <div class="post-images">
+                        {% for image in post.images %}
+                        <img src="{{ image.url }}" alt="{{ image.alt }}" class="post-image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="post-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Probabilité de fake news</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.fake_news_probability }}%"></div>
+                            <span class="stat-value">{{ post.stats.fake_news_probability }}%</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Score de sentiment</span>
+                        <div class="stat-bar sentiment">
+                            <div class="stat-fill" style="width: {{ (post.stats.sentiment_score + 1) * 50 }}%"></div>
+                            <span class="stat-value">{{ post.stats.sentiment_score }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Indice de controverse</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.controversy_index }}%"></div>
+                            <span class="stat-value">{{ post.stats.controversy_index }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Score de fiabilité</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.reliability_score }}%"></div>
+                            <span class="stat-value">{{ post.stats.reliability_score }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    <script>
+        // Toggle navigation menu
+        const navToggle = document.querySelector('.nav-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

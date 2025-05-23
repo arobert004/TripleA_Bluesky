@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumalien - Analyse de Post</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <!-- Barre de navigation -->
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="{{ url_for('index') }}" class="nav-title">Thumalien</a>
+            <button class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu">
+                <a href="{{ url_for('index') }}" class="nav-link">Retour à l'accueil</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="main-content">
+        <main class="max-w-4xl mx-auto px-4">
+            <!-- Carte du post -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center">
+                            {% if post.author.avatar %}
+                            <img src="{{ post.author.avatar }}" alt="{{ post.author.display_name }}" 
+                                 class="w-10 h-10 rounded-full mr-3">
+                            {% endif %}
+                            <div>
+                                <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
+                                    {{ post.author.display_name }}
+                                </h1>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">@{{ post.author.handle }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
+                                </svg>
+                                {{ post.likes }}
+                            </span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">
+                                <svg class="w-4 h-4 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"/>
+                                </svg>
+                                {{ post.reposts }}
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 whitespace-pre-wrap">{{ post.content }}</p>
+                    
+                    {% if post.images %}
+                    <div class="mb-4">
+                        {% for image in post.images %}
+                        <div class="relative mb-2">
+                            <img src="{{ image.url }}" alt="{{ image.alt }}" 
+                                 class="rounded-lg w-full max-w-2xl mx-auto">
+                            {% if image.alt %}
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ image.alt }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ post.timestamp }}</p>
+                </div>
+            </div>
+
+            <!-- Métriques -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Probabilité Fake News -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Probabilité de Fake News</h3>
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                            <div class="bg-red-500 h-4 rounded-full" style="width: {{ post.metrics.fake_news_probability }}%"></div>
+                        </div>
+                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ post.metrics.fake_news_probability }}%</span>
+                    </div>
+                </div>
+
+                <!-- Score de Sentiment -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Analyse de Sentiment</h3>
+                    <div class="flex items-center">
+                        {% set sentiment_percentage = ((post.metrics.sentiment_score + 1) / 2) * 100 %}
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                            <div class="bg-blue-500 h-4 rounded-full" style="width: {{ sentiment_percentage }}%"></div>
+                        </div>
+                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ "%.1f"|format(post.metrics.sentiment_score) }}</span>
+                    </div>
+                </div>
+
+                <!-- Indice de Controverse -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Indice de Controverse</h3>
+                    <div class="flex items-center">
+                        {% set controversy_percentage = post.metrics.controversy_index * 100 %}
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                            <div class="bg-yellow-500 h-4 rounded-full" style="width: {{ controversy_percentage }}%"></div>
+                        </div>
+                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ "%.1f"|format(post.metrics.controversy_index) }}</span>
+                    </div>
+                </div>
+
+                <!-- Score de Fiabilité -->
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Score de Fiabilité</h3>
+                    <div class="flex items-center">
+                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                            <div class="bg-green-500 h-4 rounded-full" style="width: {{ post.metrics.reliability_score }}%"></div>
+                        </div>
+                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ post.metrics.reliability_score }}%</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Menu burger JavaScript -->
+    <script>
+        // Toggle navigation menu
+        const navToggle = document.querySelector('.nav-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+
+        navToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            navToggle.classList.toggle('active');
+        });
+    </script>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script src="{{ url_for('static', filename='floating-images.js') }}"></script>
+</body>
+</html>

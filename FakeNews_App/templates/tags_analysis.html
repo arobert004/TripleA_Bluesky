@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thumalien - Analyse d'un tag</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="nav-title">Thumalien</a>
+            <button class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu">
+                <a href="/" class="nav-link">Retour à l'accueil</a>
+            </div>
+        </div>
+    </nav>
+
+    
+    {%if tag%} <!-- Si il y a au moins un tag dans la recherche -->
+    <main>
+        <!-- En-tête du tag -->
+        <div class="tag-header">
+            <div class="tag-info">
+                {% if tag.tag_info.avatar %}
+                <img src="{{ tag.tag_info.avatar }}" alt="{{ tag.tag_info.name }}" class="verify-image">
+                {% endif %}
+                <div class="tag-details">
+                    <h1 class="hero-title">{{ tag.tag_info.name }}</h1>
+                    <p class="hero-subtitle">Voyons ce qui se cache derrière votre recherche ...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistiques globales -->
+        <div class="global-stats">
+            <h2 class="section-title">Analyse globale du tag</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ tag.stats.fake_news_probability }}%</div>
+                    <p class="stat-text">Probabilité moyenne de fake news</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ tag.stats.sentiment_score }}</div>
+                    <p class="stat-text">Score moyen de sentiment</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ tag.stats.controversy_index }}</div>
+                    <p class="stat-text">Indice moyen de controverse</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ tag.stats.reliability_score }}%</div>
+                    <p class="stat-text">Score moyen de fiabilité</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Liste des posts -->
+        <div class="posts-container">
+            <h2 class="section-title">Analyse des posts les plus pertinents du tag</h2>
+            {% for post in tag.posts %}
+            <div class="post-analysis">
+                <div class="post-content">
+                    <div class="post-header">
+                        {% if post.author.avatar %}
+                        <img src="{{ post.author.avatar }}" alt="{{ post.author.display_name }}" class="author-avatar">
+                        {% endif %}
+                        <div class="author-info">
+                            <h3 class="author-name">{{ post.author.display_name }}</h3>
+                            <p class="author-handle">@{{ post.author.handle }}</p>
+                        </div>
+                        <span class="post-date">{{ post.created_at }}</span>
+                    </div>
+                    <div class="post-text">
+                        {{ post.content }}
+                    </div>
+                    {% if post.images %}
+                    <div class="post-images">
+                        {% for image in post.images %}
+                        <img src="{{ image.url }}" alt="{{ image.alt }}" class="post-image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="post-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Probabilité de fake news</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.fake_news_probability }}%"></div>
+                            <span class="stat-value">{{ post.stats.fake_news_probability }}%</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Score de sentiment</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ (post.stats.sentiment_score + 1) * 50 }}%"></div>
+                            <span class="stat-value">{{ post.stats.sentiment_score }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Indice de controverse</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.controversy_index }}%"></div>
+                            <span class="stat-value">{{ post.stats.controversy_index }}</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Score de fiabilité</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.reliability_score }}%"></div>
+                            <span class="stat-value">{{ post.stats.reliability_score }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+    {%endif %}
+
+    {%if not tag%}
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Pas de post sur votre tag !</h1>
+            <p class="hero-subtitle">
+                Vérifiez la bonne orthographe de votre recherche.
+            </p>
+            <a href="/" class="cta-button">Retourner à l'accueil</a>
+        </div>
+        <div class="hero-image">
+            <img src="{{ url_for('static', filename='images/landingpage/c0a1e460-a36e-11ef-86fc-7b30264b589b.jpg') }}" alt="Intelligence artificielle détectant les fake news">
+        </div>
+    </section>
+
+    {%endif %}
