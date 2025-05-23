@@ -342,5 +342,10 @@ def tag_analyze():
     
     return render_template('tags_analysis.html', tag = post_data)
 
+
+@app.route('/account_analysis')
+def account_analysis():
+    return render_template('account_analysis.html')
+
 if __name__ == '__main__':
     app.run(debug=True)
