@@ -1,10 +1,21 @@
 #########   IMPORTS & SETUPS   ##########
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+import os
+import requests
+import json
 import re
 import random
 from dateutil import parser
 from atproto import Client
+import pandas as pd
+
+# ML / DL Models
+
+from transformers import pipeline
+
+
+# APP
 
 app = Flask(__name__)
 app.secret_key = 'testibou'
@@ -80,6 +91,7 @@ def get_post_data(handle, post_id):
         
         
         ###### INSERT ANALYZE MODEL HERE ######
+        
         # Générer des scores aléatoires 
         fake_news_prob = random.uniform(0, 100)
         sentiment = random.uniform(-1, 1)
