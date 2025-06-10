@@ -90,7 +90,18 @@ def get_post_data(handle, post_id):
             pass
         
         
-        ###### INSERT ANALYZE MODEL HERE ######
+        ###### ANALYSE MODELS ######
+        
+        # Emotion model
+        emotion_model = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions")
+        # Fact or Opinion model
+        fact_or_opi = pipeline("text-classification", model="lighteternal/fact-or-opinion-xlmr-el")
+        # Positive or Negative model
+        pos_or_neg = pipeline("text-classification", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
+ 
+        result_emotion_model = emotion_model(post['record']['text'])[0][:3]
+        result_fact_or_opi = fact_or_opi(post['record']['text'])
+        result_pos_or_neg = pos_or_neg(post['record']['text'])
         
         # Générer des scores aléatoires 
         fake_news_prob = random.uniform(0, 100)
@@ -359,4 +370,5 @@ def account_analysis():
     return render_template('account_analysis.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
+
