@@ -99,15 +99,33 @@ def get_post_data(handle, post_id):
         # Positive or Negative model
         pos_or_neg = pipeline("text-classification", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
  
-        result_emotion_model = emotion_model(post['record']['text'])[0][:3]
-        result_fact_or_opi = fact_or_opi(post['record']['text'])
-        result_pos_or_neg = pos_or_neg(post['record']['text'])
-        
-        # Préparer les résultats des modèles d'analyse
-        emotion_results = [{
-            'label': r['label'],
-            'score': round(r['score'] * 100)
-        } for r in result_emotion_model]
+        # Obtenir les résultats des modèles
+        try:
+            # Récupérer les 3 émotions les plus probables
+            emotion_results = emotion_model(post['record']['text'])[0]
+            emotion_results = [{
+                'label': r['label'],
+                'score': round(r['score'] * 100)
+            } for r in emotion_results[:3]]
+            
+            # Analyse fact/subjectif
+            fact_opinion_result = fact_or_opi(post['record']['text'])[0]
+            fact_opinion_score = round(fact_opinion_result['score'] * 100)
+            fact_opinion_label = "Objectif" if fact_opinion_result['label'] == 'LABEL_1' else "Subjectif"
+            
+            # Analyse sentiment
+            sentiment_result = pos_or_neg(post['record']['text'])[0]
+            sentiment_score = round(sentiment_result['score'] * 100)
+            sentiment_label = sentiment_result['label'].capitalize()
+            
+        except Exception as e:
+            print(f"Erreur lors de l'analyse des modèles : {str(e)}")
+            # Valeurs par défaut en cas d'erreur
+            emotion_results = []
+            fact_opinion_score = 50
+            fact_opinion_label = "Non disponible"
+            sentiment_score = 50
+            sentiment_label = "Non disponible"
         
         fact_opinion_result = result_fact_or_opi[0]
         fact_opinion_score = round(fact_opinion_result['score'] * 100)
