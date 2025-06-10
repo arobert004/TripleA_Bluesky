@@ -121,6 +121,14 @@ def get_post_data(handle, post_id):
             sentiment_score = round(sentiment_result['score'] * 100)
             sentiment_label = sentiment_result['label'].capitalize()
             
+            # Perplexity answer 
+            
+            perplexity_answer = {'fake_news_prob': 0.85,
+                'source1': 'https://www.france24.com/fr/%C3%A9co-tech/20250430-etats-unis-economie-pib-recule-donald-trump-accuse-joe-biden-droits-douane',
+                'source2': 'https://www.ofce.sciences-po.fr/blog2024/fr/20250428_CB/',
+                'source3': 'https://www.lemonde.fr/economie/article/2025/02/11/donald-trump-va-t-il-saborder-l-economie-americaine_6541097_3234.html'}
+                            
+            
         except Exception as e:
             # print(f"sentim - Erreur lors de l'analyse des modèles : {str(e)}")
             # Valeurs par défaut en cas d'erreur
@@ -150,7 +158,8 @@ def get_post_data(handle, post_id):
                 'sentiment': {
                     'score': sentiment_score,
                     'label': sentiment_label
-                }
+                },
+                'perplexity' : perplexity_answer
             },
             'likes': post['like_count'],
             'reposts': post['repost_count'],
@@ -396,5 +405,5 @@ def account_analysis():
     return render_template('account_analysis.html')
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=False, host="0.0.0.0", port=5000)
 
