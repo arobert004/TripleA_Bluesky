@@ -4,6 +4,42 @@
     --primary-text: #1f2937;
 }
 
+/* Style pour le bouton d'analyse du compte */
+.account-analysis-btn {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.account-analysis-btn:hover {
+    transform: translateY(-2px);
+}
+
+
+.account-analysis-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.2));
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+}
+
+.account-analysis-btn:hover::before {
+    transform: translateX(0);
+}
+
+.account-analysis-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.account-analysis-btn:hover svg {
+    transform: scale(1.1);
+}
+
 body {
     font-family: 'Roboto', sans-serif;
 }
