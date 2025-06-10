@@ -9,7 +9,6 @@ from atproto import Client
 app = Flask(__name__)
 app.secret_key = 'testibou'
 
-#test#
 
 #########   BLUESKY API GET DATAS FUNCTIONS   ##########
 
