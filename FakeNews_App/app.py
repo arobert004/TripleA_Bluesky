@@ -93,7 +93,7 @@ def get_post_data(handle, post_id):
         ###### ANALYSE MODELS ######
         
         # Emotion model
-        emotion_model = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions")
+        emotion_model = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
         # Fact or Opinion model
         fact_or_opi = pipeline("text-classification", model="lighteternal/fact-or-opinion-xlmr-el")
         # Positive or Negative model
@@ -101,39 +101,35 @@ def get_post_data(handle, post_id):
  
         # Obtenir les résultats des modèles
         try:
+            
             # Récupérer les 3 émotions les plus probables
-            emotion_results = emotion_model(post['record']['text'])[0]
+            emotion_results = emotion_model(post['record']['text'])[0][:3]
+            
             emotion_results = [{
                 'label': r['label'],
                 'score': round(r['score'] * 100)
-            } for r in emotion_results[:3]]
+            } for r in emotion_results]
+            
             
             # Analyse fact/subjectif
             fact_opinion_result = fact_or_opi(post['record']['text'])[0]
             fact_opinion_score = round(fact_opinion_result['score'] * 100)
             fact_opinion_label = "Objectif" if fact_opinion_result['label'] == 'LABEL_1' else "Subjectif"
-            
+                
             # Analyse sentiment
             sentiment_result = pos_or_neg(post['record']['text'])[0]
             sentiment_score = round(sentiment_result['score'] * 100)
             sentiment_label = sentiment_result['label'].capitalize()
             
         except Exception as e:
-            print(f"Erreur lors de l'analyse des modèles : {str(e)}")
+            # print(f"sentim - Erreur lors de l'analyse des modèles : {str(e)}")
             # Valeurs par défaut en cas d'erreur
             emotion_results = []
             fact_opinion_score = 50
             fact_opinion_label = "Non disponible"
             sentiment_score = 50
             sentiment_label = "Non disponible"
-        
-        fact_opinion_result = result_fact_or_opi[0]
-        fact_opinion_score = round(fact_opinion_result['score'] * 100)
-        fact_opinion_label = "Objectif" if fact_opinion_result['label'] == 'LABEL_1' else "Subjectif"
-        
-        sentiment_result = result_pos_or_neg[0]
-        sentiment_score = round(sentiment_result['score'] * 100)
-        sentiment_label = sentiment_result['label'].capitalize()
+
         
         return {
             'author': {

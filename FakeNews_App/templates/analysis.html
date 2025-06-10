@@ -179,55 +179,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Métriques -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <!-- Probabilité Fake News -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Probabilité de Fake News</h3>
-                    <div class="flex items-center">
-                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-                            <div class="bg-red-500 h-4 rounded-full" style="width: {{ post.metrics.fake_news_probability }}%"></div>
-                        </div>
-                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ post.metrics.fake_news_probability }}%</span>
-                    </div>
-                </div>
-
-                <!-- Score de Sentiment -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Analyse de Sentiment</h3>
-                    <div class="flex items-center">
-                        {% set sentiment_percentage = ((post.metrics.sentiment_score + 1) / 2) * 100 %}
-                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-                            <div class="bg-blue-500 h-4 rounded-full" style="width: {{ sentiment_percentage }}%"></div>
-                        </div>
-                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ "%.1f"|format(post.metrics.sentiment_score) }}</span>
-                    </div>
-                </div>
-
-                <!-- Indice de Controverse -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Indice de Controverse</h3>
-                    <div class="flex items-center">
-                        {% set controversy_percentage = post.metrics.controversy_index * 100 %}
-                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-                            <div class="bg-yellow-500 h-4 rounded-full" style="width: {{ controversy_percentage }}%"></div>
-                        </div>
-                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ "%.1f"|format(post.metrics.controversy_index) }}</span>
-                    </div>
-                </div>
-
-                <!-- Score de Fiabilité -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold mb-2 text-gray-800 dark:text-white">Score de Fiabilité</h3>
-                    <div class="flex items-center">
-                        <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-                            <div class="bg-green-500 h-4 rounded-full" style="width: {{ post.metrics.reliability_score }}%"></div>
-                        </div>
-                        <span class="ml-4 font-semibold text-gray-700 dark:text-gray-300">{{ post.metrics.reliability_score }}%</span>
-                    </div>
-                </div>
-            </div>
         </main>
     </div>
 
