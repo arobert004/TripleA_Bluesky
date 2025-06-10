@@ -103,11 +103,19 @@ def get_post_data(handle, post_id):
         result_fact_or_opi = fact_or_opi(post['record']['text'])
         result_pos_or_neg = pos_or_neg(post['record']['text'])
         
-        # Générer des scores aléatoires 
-        fake_news_prob = random.uniform(0, 100)
-        sentiment = random.uniform(-1, 1)
-        controversy = random.uniform(0, 1)
-        reliability = random.uniform(0, 100)
+        # Préparer les résultats des modèles d'analyse
+        emotion_results = [{
+            'label': r['label'],
+            'score': round(r['score'] * 100)
+        } for r in result_emotion_model]
+        
+        fact_opinion_result = result_fact_or_opi[0]
+        fact_opinion_score = round(fact_opinion_result['score'] * 100)
+        fact_opinion_label = "Objectif" if fact_opinion_result['label'] == 'LABEL_1' else "Subjectif"
+        
+        sentiment_result = result_pos_or_neg[0]
+        sentiment_score = round(sentiment_result['score'] * 100)
+        sentiment_label = sentiment_result['label'].capitalize()
         
         return {
             'author': {
@@ -119,12 +127,16 @@ def get_post_data(handle, post_id):
             'created_at': parser.parse(post['indexed_at']).strftime("%d/%m/%Y %H:%M"),
             'images': images,
             
-            ###### INSERT RESULT OF THE ANALYZE MODEL HERE ######
-            'metrics': {
-                'fake_news_probability': round(fake_news_prob, 1),
-                'sentiment_score': round(sentiment, 2),
-                'controversy_index': round(controversy, 1),
-                'reliability_score': round(reliability, 1)
+            'analysis': {
+                'emotions': emotion_results,
+                'fact_opinion': {
+                    'score': fact_opinion_score,
+                    'label': fact_opinion_label
+                },
+                'sentiment': {
+                    'score': sentiment_score,
+                    'label': sentiment_label
+                }
             },
             'likes': post['like_count'],
             'reposts': post['repost_count'],

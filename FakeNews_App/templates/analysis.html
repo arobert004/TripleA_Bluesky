@@ -123,6 +123,63 @@
                 </script>
             </div>
 
+            <!-- Section Fake News -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold mb-4">Analyse des Fake News</h2>
+                    <p class="text-gray-600 dark:text-gray-400">Cette section sera mise à jour avec un modèle d'analyse des fake news.</p>
+                </div>
+            </div>
+
+            <!-- Sections d'analyse -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Analyse de l'objectivité -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold mb-4">Objectivité</h3>
+                        <div class="flex items-center mb-4">
+                            <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                                <div class="bg-blue-500 h-4 rounded-full" style="width: {{ post.analysis.fact_opinion.score }}%"></div>
+                            </div>
+                            <span class="ml-4 font-semibold">{{ post.analysis.fact_opinion.score }}%</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">{{ post.analysis.fact_opinion.label }}</p>
+                    </div>
+                </div>
+
+                <!-- Analyse des émotions -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold mb-4">Émotions</h3>
+                        <div class="space-y-4">
+                            {% for emotion in post.analysis.emotions %}
+                            <div class="flex items-center">
+                                <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                                    <div class="bg-green-500 h-4 rounded-full" style="width: {{ emotion.score }}%"></div>
+                                </div>
+                                <span class="ml-4 font-semibold">{{ emotion.score }}%</span>
+                                <span class="ml-2 text-gray-600 dark:text-gray-400">{{ emotion.label }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analyse du ton -->
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-lg font-semibold mb-4">Ton</h3>
+                        <div class="flex items-center mb-4">
+                            <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                                <div class="bg-purple-500 h-4 rounded-full" style="width: {{ post.analysis.sentiment.score }}%"></div>
+                            </div>
+                            <span class="ml-4 font-semibold">{{ post.analysis.sentiment.score }}%</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">{{ post.analysis.sentiment.label }}</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Métriques -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Probabilité Fake News -->
