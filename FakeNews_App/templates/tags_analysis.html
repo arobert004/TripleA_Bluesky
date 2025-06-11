@@ -38,7 +38,50 @@
             </div>
         </div>
 
-        <p>{{tag}}</p>
+        <!-- SECTION 1 : Statistiques globales du tag -->
+        <section class="global-stats">
+            <!-- Emotions dominantes (Camembert) -->
+            <div class="charts-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2.5rem;margin-bottom:2.5rem;align-items:start;">
+                <div class="chart-block">
+                    <h2 class="feed-title" style="font-size:1.2rem;text-align:center;">Émotions dominantes</h2>
+                    <canvas id="emotionsPie"></canvas>
+                </div>
+                <div class="chart-block">
+                    <h2 class="feed-title" style="font-size:1.2rem;text-align:center;">Objectivité</h2>
+                    <canvas id="objectivityPie"></canvas>
+                </div>
+                <div class="chart-block">
+                    <h2 class="feed-title" style="font-size:1.2rem;text-align:center;">Ton</h2>
+                    <canvas id="tonePie"></canvas>
+                </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+            // Données dynamiques injectées depuis Jinja
+            const emotionsLabels = [{% for emotion, count in tag.stats.emotion_total %}'{{ emotion|capitalize }}'{% if not loop.last %}, {% endif %}{% endfor %}];
+            const emotionsData = [{% for emotion, count in tag.stats.emotion_total %}{{ count }}{% if not loop.last %}, {% endif %}{% endfor %}];
+            const emotionsTotal = emotionsData.reduce((a,b)=>a+b,0);
+            const emotionsPercent = emotionsData.map(v=>Math.round(100*v/emotionsTotal));
+
+            const objectivityLabels = ['Objectif','Subjectif'];
+            const objectivityData = [{{ tag.stats.fact_opi_total['Objectif']|default(0) }}, {{ tag.stats.fact_opi_total['Subjectif']|default(0) }}];
+            const objectivityTotal = objectivityData.reduce((a,b)=>a+b,0);
+            const objectivityPercent = objectivityData.map(v=>objectivityTotal?Math.round(100*v/objectivityTotal):0);
+
+            const toneLabels = ['Positive','Neutral','Negative'];
+            const toneData = [
+                {{ tag.stats.total_sentiment_model['Positive']|default(0) }},
+                {{ tag.stats.total_sentiment_model['Neutral']|default(0) }},
+                {{ tag.stats.total_sentiment_model['Negative']|default(0) }}
+            ];
+            const toneTotal = toneData.reduce((a,b)=>a+b,0);
+            const tonePercent = toneData.map(v=>toneTotal?Math.round(100*v/toneTotal):0);
+            </script>
+            <script src="{{ url_for('static', filename='tags_piecharts.js') }}"></script>
+
+        </section>
+
+        <!-- SECTION 2 : Liste des posts du tag -->
 
     {%endif %}
 
