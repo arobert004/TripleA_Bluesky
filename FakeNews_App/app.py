@@ -455,10 +455,21 @@ def predict_bot_score(handle):
     else:
         df = pd.DataFrame([features])
         score = bot_detection_model.predict_proba(df)[0][1]
+        
+    avatar = profile.model_dump()['avatar']
+    display_name = profile.model_dump()["display_name"]
+    followers_count = profile.model_dump()["followers_count"]
+    follows_count = profile.model_dump()["follows_count"]
+    posts_count = profile.model_dump()["posts_count"]
 
     # Renvoyer toutes les infos dans un dictionnaire
     result = {
         'handle': handle,
+        'display_name' : display_name,
+        'avatar' : avatar,
+        'followers_counts' : followers_count, 
+        "follows_count" : follows_count,
+        "posts_count" : posts_count,
         'is_verified': is_verified,
         'bot_risk_score': score,
         'features': features
