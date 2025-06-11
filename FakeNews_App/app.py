@@ -273,6 +273,7 @@ def get_feed_data(did, feed_id):
         print(f"Erreur lors de la récupération du feed: {str(e)}")
         return None
 
+
 def get_tag_datas(user_tag) :
     ''' Récupérer les informations liés à un tag'''
     try:
@@ -280,7 +281,8 @@ def get_tag_datas(user_tag) :
         client.login(login='aro402@hotmail.fr', password='gamertag')
 
         searchresult = client.app.bsky.feed.search_posts({'q' : user_tag,
-                                                        'sort' : 'top'})
+                                                        'sort' : 'top',
+                                                        'limit' : 50})
 
         # 'Pas de posts sur ce tag' ? 
         if searchresult.model_dump()['posts'] == [] : 
@@ -288,26 +290,65 @@ def get_tag_datas(user_tag) :
             return False 
             
         posts_data = []
-        total_fake_news_prob = 0
-        total_sentiment = 0
-        total_controversy = 0
-        total_reliability = 0
+
+        
+        total_emotion = {}
+        total_fact_opinion = {"Objectif" : 0,
+                              "Subjectif" : 0}
+        total_sentiment_model = {"Positive" : 0,
+                                 "Neutral" : 0,
+                                 "Negative" : 0}
+        total_gram_mistakes = 0
+        
 
         for item in searchresult.model_dump()['posts']:
-            post = item
-            # print(f"Traitement du post: {post['record']['text'][:100]}...")
-            
-            # Générer des scores aléatoires pour chaque post
-            fake_news_prob = random.uniform(0, 100)
-            sentiment = random.uniform(-1, 1)
-            controversy = random.uniform(0, 100)
-            reliability = random.uniform(0, 100)
 
-            # Accumuler pour les moyennes
-            total_fake_news_prob += fake_news_prob
-            total_sentiment += sentiment
-            total_controversy += controversy
-            total_reliability += reliability
+            post = item
+
+            # Récupérer l'emotion la plus probable
+            emotion_results = emotion_model(post['record']['text'])[0][:1]
+            
+            emotion_results = [{
+                'label': r['label'],
+                'score': round(r['score'] * 100)
+            } for r in emotion_results][0]
+            
+            # Analyse fact/subjectif
+            fact_opinion_result = fact_or_opi(post['record']['text'])[0]
+            fact_opinion_score = round(fact_opinion_result['score'] * 100)
+            fact_opinion_label = "Objectif" if fact_opinion_result['label'] == 'LABEL_1' else "Subjectif"
+            
+            # Analyse sentiment
+            sentiment_result = pos_or_neg(post['record']['text'])[0]
+            sentiment_score = round(sentiment_result['score'] * 100)
+            sentiment_label = sentiment_result['label'].capitalize()
+            
+            # Gramm mistake - RALENTI TROP LE PROCESS 
+            # language = post['record']['langs']
+            # if language == None : 
+            #     language = 'en'
+            # gram_mistakes = count_spelling_errors(post['record']['text'][:20], language)
+            # total_gram_mistakes += gram_mistakes
+
+
+            
+            # Stockage pour scores globaux
+            
+            #EMOTION
+            if emotion_results['label'] not in total_emotion.keys() :
+                
+                total_emotion[emotion_results['label']] = 0
+                total_emotion[emotion_results['label']] += 1
+                
+            else : 
+                
+                total_emotion[emotion_results['label']] += 1
+
+            #FACTOPI
+            total_fact_opinion[fact_opinion_label] += 1 
+            
+            #SENTIMENT
+            total_sentiment_model[sentiment_label] += 1 
 
             # Extraire les images si présentes
             images = []
@@ -333,10 +374,15 @@ def get_tag_datas(user_tag) :
                 'created_at': parser.parse(post['indexed_at']).strftime("%d/%m/%Y %H:%M"),
                 'images': images,
                 'stats': {
-                    'fake_news_probability': round(fake_news_prob, 1),
-                    'sentiment_score': round(sentiment, 2),
-                    'controversy_index': round(controversy, 1),
-                    'reliability_score': round(reliability, 1)
+                    'emotions': emotion_results,
+                    'fact_opinion': {
+                        'score': fact_opinion_score,
+                        'label': fact_opinion_label
+                                },
+                    'sentiment': {
+                        'score': sentiment_score,
+                        'label': sentiment_label
+                    }
                 }
             }
             posts_data.append(post_data)
@@ -344,10 +390,9 @@ def get_tag_datas(user_tag) :
         # Calculer les moyennes pour le feed entier
         num_posts = len(posts_data)
         allposts_tags_stats = {
-            'fake_news_probability': round(total_fake_news_prob / num_posts, 1),
-            'sentiment_score': round(total_sentiment / num_posts, 2),
-            'controversy_index': round(total_controversy / num_posts, 1),
-            'reliability_score': round(total_reliability / num_posts, 1)
+            'emotion_total' : sorted(total_emotion.items(), key=lambda x: x[1], reverse=True)[:3],
+            'fact_opi_total' : total_fact_opinion,
+            'total_sentiment_model' : total_sentiment_model
         }
         
         return {
