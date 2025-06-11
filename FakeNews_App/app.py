@@ -416,10 +416,15 @@ def extract_user_features(handle):
     std_hours = np.std([ts.hour for ts in timestamps_sorted]) if timestamps else 0
 
     # création des features pour établir un score de fiabilité du compte
+    
+    if profile['follows_count'] == 0 :
+        follows_count = profile['follows_count'] + 1
+    else : 
+        follows_count = profile['follows_count'] 
  
     features = {
-        'posts_per_day': len(timestamps) / max((now - created_at).days, 1),
-        'follower_following_ratio': profile['followers_count'] / (profile['follows_count'] + 1),
+        'posts_per_day': profile['posts_count'] / max((now - created_at).days, 1),
+        'follower_following_ratio': profile['followers_count'] / follows_count,
         'account_age_days': (now - created_at).days,
         'link_ratio': link_count / max(len(timestamps), 1),
         'reply_ratio': reply_count / max(len(timestamps), 1),
