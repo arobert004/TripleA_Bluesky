@@ -139,10 +139,68 @@
             </div>
 
             <!-- Section Fake News -->
-            <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-xl shadow-lg overflow-hidden mb-8">
-                <div class="p-6 text-center">
-                    <h2 class="text-2xl md:text-3xl font-bold text-white font-serif tracking-wider">FAKE NEWS</h2>
-                    <p class="text-red-100 mt-2">Analyse en cours de développement</p>
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mb-8 border border-gray-200 dark:border-gray-700">
+                <div class="flex flex-col gap-2 p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            {% set prob = post.analysis.perplexity.fake_news_prob %}
+                            {% if prob <= 0.25 %}
+                                <h2 class="text-lg md:text-xl font-bold text-green-600">Pas fake news</h2>
+                            {% elif prob <= 0.5 %}
+                                <h2 class="text-lg md:text-xl font-bold text-yellow-600">Faible probabilité fake news</h2>
+                            {% elif prob <= 0.75 %}
+                                <h2 class="text-lg md:text-xl font-bold text-orange-600">Forte probabilité fake news</h2>
+                            {% else %}
+                                <h2 class="text-lg md:text-xl font-bold text-red-600">Fake news</h2>
+                            {% endif %}
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <span class="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white animate-swing origin-center inline-block">{{ (prob * 100)|round(1) }}%</span>
+                            <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">Probabilité de fake news</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button id="toggle-sources" type="button" class="mb-2 px-3 py-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 text-sm font-medium focus:outline-none focus:ring hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                            Afficher les sources pertinentes
+                        </button>
+                        <div id="sources-list" class="flex flex-col gap-2" style="display: none;">
+                            {% set s1 = post.analysis.perplexity.source1 %}
+                            {% set s2 = post.analysis.perplexity.source2 %}
+                            {% set s3 = post.analysis.perplexity.source3 %}
+                            {% set has_source = false %}
+                            {% if s1 %}
+                                {% set has_source = true %}
+                                <a href="{{ s1 }}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 transition">
+                                    {{ s1[:30] }}{% if s1|length > 30 %}...{% endif %}
+                                </a>
+                            {% endif %}
+                            {% if s2 %}
+                                {% set has_source = true %}
+                                <a href="{{ s2 }}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 transition">
+                                    {{ s2[:30] }}{% if s2|length > 30 %}...{% endif %}
+                                </a>
+                            {% endif %}
+                            {% if s3 %}
+                                {% set has_source = true %}
+                                <a href="{{ s3 }}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 transition">
+                                    {{ s3[:30] }}{% if s3|length > 30 %}...{% endif %}
+                                </a>
+                            {% endif %}
+                            {% if not has_source %}
+                                <span class="text-gray-400">Aucune source disponible</span>
+                            {% endif %}
+                        </div>
+                        <script>
+                            const btn = document.getElementById('toggle-sources');
+                            const srcList = document.getElementById('sources-list');
+                            let srcOpen = false;
+                            btn.addEventListener('click', function() {
+                                srcOpen = !srcOpen;
+                                srcList.style.display = srcOpen ? 'flex' : 'none';
+                                btn.textContent = srcOpen ? 'Masquer les sources pertinentes' : 'Afficher les sources pertinentes';
+                            });
+                        </script>
+                    </div>
                 </div>
             </div>
 
