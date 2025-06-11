@@ -1216,7 +1216,7 @@ body {
 .stat-label {
     color: var(--secondary-text);
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: bolder;
 }
 
 .dark .stat-label {
@@ -1224,7 +1224,7 @@ body {
 }
 
 .stat-bar {
-    height: 8px;
+    height: 15px;
     background: #e5e7eb;
     border-radius: 4px;
     overflow: hidden;
@@ -1247,8 +1247,9 @@ body {
     right: 2px;
     top: 0px;
     color: var(--secondary-text);
-    font-size: 0.5rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 750;
+    background-color:rgb(254 255 239/ 50%);
 }
 
 .dark .stat-value {

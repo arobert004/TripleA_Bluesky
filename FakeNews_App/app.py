@@ -306,12 +306,12 @@ def get_tag_datas(user_tag) :
             post = item
 
             # Récupérer l'emotion la plus probable
-            emotion_results = emotion_model(post['record']['text'])[0][:1]
+            emotion_results = emotion_model(post['record']['text'])[0][:5]
             
             emotion_results = [{
                 'label': r['label'],
                 'score': round(r['score'] * 100)
-            } for r in emotion_results][0]
+            } for r in emotion_results]
             
             # Analyse fact/subjectif
             fact_opinion_result = fact_or_opi(post['record']['text'])[0]
@@ -335,14 +335,15 @@ def get_tag_datas(user_tag) :
             # Stockage pour scores globaux
             
             #EMOTION
-            if emotion_results['label'] not in total_emotion.keys() :
-                
-                total_emotion[emotion_results['label']] = 0
-                total_emotion[emotion_results['label']] += 1
-                
-            else : 
-                
-                total_emotion[emotion_results['label']] += 1
+            for emotion_results_var in emotion_results :
+                if emotion_results_var['label'] not in total_emotion.keys() :
+                    
+                    total_emotion[emotion_results_var['label']] = 0
+                    total_emotion[emotion_results_var['label']] += 1
+                    
+                else : 
+                    
+                    total_emotion[emotion_results_var['label']] += 1
 
             #FACTOPI
             total_fact_opinion[fact_opinion_label] += 1 
@@ -390,7 +391,7 @@ def get_tag_datas(user_tag) :
         # Calculer les moyennes pour le feed entier
         num_posts = len(posts_data)
         allposts_tags_stats = {
-            'emotion_total' : sorted(total_emotion.items(), key=lambda x: x[1], reverse=True)[:3],
+            'emotion_total' : sorted(total_emotion.items(), key=lambda x: x[1], reverse=True)[:5],
             'fact_opi_total' : total_fact_opinion,
             'total_sentiment_model' : total_sentiment_model
         }

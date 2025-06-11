@@ -82,7 +82,59 @@
         </section>
 
         <!-- SECTION 2 : Liste des posts du tag -->
-
+        <!-- Liste des posts -->
+        <div class="posts-container">
+            <h2 class="section-title">Analyse des 10 posts les plus pertinents</h2>
+            {% for post in tag.posts[:10] %}
+            <div class="post-analysis">
+                <div class="post-content">
+                    <div class="post-header">
+                        {% if post.author.avatar %}
+                        <img src="{{ post.author.avatar }}" alt="{{ post.author.display_name }}" class="author-avatar">
+                        {% endif %}
+                        <div class="author-info">
+                            <h3 class="author-name">{{ post.author.display_name }}</h3>
+                            <p class="author-handle">@{{ post.author.handle }}</p>
+                        </div>
+                        <span class="post-date">{{ post.created_at }}</span>
+                    </div>
+                    <div class="post-text">
+                        {{ post.content }}
+                    </div>
+                    {% if post.images %}
+                    <div class="post-images">
+                        {% for image in post.images %}
+                        <img src="{{ image.url }}" alt="{{ image.alt }}" class="post-image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="post-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Emotion principale : {{post.stats.emotions[0].label.capitalize()}}</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.emotions[0].score}}%"></div>
+                            <span class="stat-value">{{ post.stats.emotions[0].score }}%</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">{{post.stats.fact_opinion.label}}</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.fact_opinion.score }}%"></div>
+                            <span class="stat-value">{{ post.stats.fact_opinion.score }}%</span>
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Ton : {{post.stats.sentiment.label}}</span>
+                        <div class="stat-bar">
+                            <div class="stat-fill" style="width: {{ post.stats.sentiment.score }}%"></div>
+                            <span class="stat-value">{{ post.stats.sentiment.score }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     {%endif %}
 
     {%if not tag%}
