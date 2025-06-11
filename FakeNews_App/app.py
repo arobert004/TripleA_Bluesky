@@ -9,6 +9,11 @@ import random
 from dateutil import parser
 from atproto import Client
 import pandas as pd
+import numpy as np 
+import joblib
+import datetime
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ML / DL Models
 
@@ -20,6 +25,9 @@ emotion_model = pipeline(task="text-classification", model="SamLowe/roberta-base
 fact_or_opi = pipeline("text-classification", model="lighteternal/fact-or-opinion-xlmr-el")
 # Positive or Negative model
 pos_or_neg = pipeline("text-classification", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
+# Bot Detection
+bot_detection_model = joblib.load(os.path.join(BASE_DIR, "models", "bot_detector_model.joblib"))
+
 
 
 # APP
@@ -356,6 +364,107 @@ def get_tag_datas(user_tag) :
         
         print(f"Erreur lors de l'extraction des images: {str(e)}")
         pass
+    
+def extract_user_features(handle):
+    
+    # Client
+    client = Client()
+    client.login(login='aro402@hotmail.fr', password='gamertag')
+    
+    
+    # récupération des infos relatives au profil & feed
+    profile = client.app.bsky.actor.get_profile({'actor': handle})
+    feed = client.app.bsky.feed.get_author_feed({'actor': handle, 'limit': 100})
+
+    # marqueur temporel pour calculer l'ancienneté du compte
+    now = datetime.datetime.now(datetime.timezone.utc)
+    created_at = profile['created_at']
+    created_at = datetime.datetime.fromisoformat(created_at)
+
+    # initialisation des variables à incrémenter 
+    posts = feed['feed']
+    timestamps = []
+    link_count = 0
+    reply_count = 0
+    repost_count = 0
+
+    # récupération des infos des 100 derniers posts
+    
+    for item in posts:
+        post = item['post']
+        record = post['record']
+
+        if not record:
+            continue
+
+        timestamp = datetime.datetime.fromisoformat(record['created_at'])
+        timestamps.append(timestamp)
+
+        text = getattr(record, 'text', '')
+        if 'http://' in text or 'https://' in text:
+            link_count += 1
+
+        if record.reply:
+            reply_count += 1
+
+        if item.reason and getattr(item.reason, '$type', '') == 'app.bsky.feed.defs#reasonRepost':
+            repost_count += 1
+            
+    # 
+    timestamps_sorted = sorted(timestamps)
+    intervals = np.diff([ts.timestamp() for ts in timestamps_sorted])
+    std_hours = np.std([ts.hour for ts in timestamps_sorted]) if timestamps else 0
+
+    # création des features pour établir un score de fiabilité du compte
+ 
+    features = {
+        'posts_per_day': len(timestamps) / max((now - created_at).days, 1),
+        'follower_following_ratio': profile['followers_count'] / (profile['follows_count'] + 1),
+        'account_age_days': (now - created_at).days,
+        'link_ratio': link_count / max(len(timestamps), 1),
+        'reply_ratio': reply_count / max(len(timestamps), 1),
+        'repost_ratio': repost_count / max(len(timestamps), 1)
+    }
+
+    return features   
+
+    
+def predict_bot_score(handle):
+    
+    # Client
+    client = Client()
+    client.login(login='aro402@hotmail.fr', password='gamertag')
+    
+    try:
+        profile = client.app.bsky.actor.get_profile({'actor': handle})
+    except Exception as e:
+        print(f"Erreur lors de la récupération du profil : {e}")
+
+
+    # Vérification du statut de vérification
+    verification = getattr(profile, 'verification', None)
+    verified_raw = getattr(verification, 'verified_status', False) if verification else False
+    is_verified = str(verified_raw).lower() == 'true'
+
+    # Extraire les features
+    features = extract_user_features(handle)
+
+    if is_verified:
+        print("Compte vérifié")
+        score = 0.0
+    else:
+        df = pd.DataFrame([features])
+        score = bot_detection_model.predict_proba(df)[0][1]
+
+    # Renvoyer toutes les infos dans un dictionnaire
+    result = {
+        'handle': handle,
+        'is_verified': is_verified,
+        'bot_risk_score': score,
+        'features': features
+    }
+
+    return result
 
 
 #########   PAGES LOGIC   ##########
@@ -399,9 +508,12 @@ def tag_analyze():
     return render_template('tags_analysis.html', tag = post_data)
 
 
-@app.route('/account_analysis')
-def account_analysis():
-    return render_template('account_analysis.html')
+@app.route('/account_analysis/<handle>')
+def account_analysis(handle):
+    
+    result = predict_bot_score(handle=handle)
+    
+    return render_template('account_analysis.html', handle=handle, result=result)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
