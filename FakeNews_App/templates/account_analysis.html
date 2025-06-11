@@ -24,10 +24,63 @@
 
 
     <main>
-        <h1 class="hero-title">Analyse du compte : {{handle}} </h1>
+        <!-- Bandeau profil -->
+        <section class="feed-header">
+            <div class="feed-info">
+                <img class="author-avatar" src="{{ result.avatar }}" alt="Avatar de {{ result.display_name }}">
+                <div class="feed-details">
+                    <div class="author-name">{{ result.display_name }}
+                        {% if result.is_verified %}
+                            <span title="Compte vérifié" class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-200 text-blue-900 align-middle">
+                                <svg class="w-4 h-4 mr-1 inline-block" fill="currentColor" viewBox="0 0 20 20"><path d="M16.707 5.293a1 1 0 00-1.414 0L9 11.586 6.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l7-7a1 1 0 000-1.414z"></path></svg>
+                                Vérifié
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="author-handle">@{{ result.handle }}</div>
+                    <div class="flex gap-4 mt-2">
+                        <span><b>Followers :</b> {{ '{:,}'.format(result.followers_counts) }}</span>
+                        <span><b>Abonnements :</b> {{ '{:,}'.format(result.follows_count) }}</span>
+                        <span><b>Posts :</b> {{ '{:,}'.format(result.posts_count) }}</span>
+                    </div>
+                </div>
+                <div style="min-width:120px;text-align:center;">
+                    <div class="stat-label" style="color:var(--primary-blue);font-size:0.85rem;">Score de risque de bot</div>
+                    <div style="font-size:2rem;font-weight:700;color:var(--primary-blue);line-height:1;">{{ (result.bot_risk_score * 100) | round(1) }}%</div>
+                </div>
+            </div>
+        </section>
 
-        <p>{{result}}</p>
-
+        <!-- Statistiques du compte -->
+        <section class="global-stats">
+            <h2 class="feed-title" style="font-size:1.3rem;margin-bottom:1.5rem;">Statistiques du compte</h2>
+            <div class="stats-cards-grid">
+                <div class="stat-card">
+                    <div class="stat-card-value">{{ result.features.posts_per_day | round(3) }}</div>
+                    <div class="stat-card-label">Posts par jour</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">{{ result.features.follower_following_ratio | round(2) }}</div>
+                    <div class="stat-card-label">Ratio followers/abonnements</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">{{ result.features.account_age_days }}</div>
+                    <div class="stat-card-label">Âge du compte (jours)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">{{ (result.features.link_ratio * 100) | round(1) }}%</div>
+                    <div class="stat-card-label">Ratio de liens dans les posts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">{{ (result.features.reply_ratio * 100) | round(1) }}%</div>
+                    <div class="stat-card-label">Ratio de réponses</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-value">{{ (result.features.repost_ratio * 100) | round(1) }}%</div>
+                    <div class="stat-card-label">Ratio de repartages</div>
+                </div>
+            </div>
+        </section>
     </main>
 
 </body>
