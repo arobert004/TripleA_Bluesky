@@ -971,6 +971,22 @@ body {
 
 /* Tag Analysis Styles */
 
+/* Animation continue pour le score Fake News */
+@keyframes swing {
+  0% { transform: rotate(-8deg); }
+  20% { transform: rotate(6deg); }
+  40% { transform: rotate(-4deg); }
+  60% { transform: rotate(3deg); }
+  80% { transform: rotate(-2deg); }
+  100% { transform: rotate(0deg); }
+}
+.animate-swing {
+  animation: swing 2s cubic-bezier(.36,.07,.19,.97) infinite;
+  display: inline-block;
+  transform-origin: 50% 80%;
+}
+
+
 .tag-header {
     background: white;
     border-radius: 1rem;
