@@ -14,6 +14,13 @@ import pandas as pd
 
 from transformers import pipeline
 
+# Emotion model
+emotion_model = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
+# Fact or Opinion model
+fact_or_opi = pipeline("text-classification", model="lighteternal/fact-or-opinion-xlmr-el")
+# Positive or Negative model
+pos_or_neg = pipeline("text-classification", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
+
 
 # APP
 
@@ -90,15 +97,7 @@ def get_post_data(handle, post_id):
             pass
         
         
-        ###### ANALYSE MODELS ######
-        
-        # Emotion model
-        emotion_model = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
-        # Fact or Opinion model
-        fact_or_opi = pipeline("text-classification", model="lighteternal/fact-or-opinion-xlmr-el")
-        # Positive or Negative model
-        pos_or_neg = pipeline("text-classification", model="cardiffnlp/twitter-roberta-base-sentiment-latest")
- 
+
         # Obtenir les résultats des modèles
         try:
             
@@ -405,5 +404,5 @@ def account_analysis():
     return render_template('account_analysis.html')
 
 if __name__ == '__main__':
-    app.run(debug=False, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)
 
