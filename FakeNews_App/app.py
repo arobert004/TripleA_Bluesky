@@ -186,7 +186,7 @@ def get_feed_data(did, feed_id):
         
         # Récupérer les posts du feed
         feed_uri = f"at://{did}/app.bsky.feed.generator/{feed_id}"
-        feed = client.app.bsky.feed.get_feed({"feed": feed_uri, "limit": 10})
+        feed = client.app.bsky.feed.get_feed({"feed": feed_uri, "limit": 50})
         feed_data = feed.model_dump()
         
         if not feed_data or 'feed' not in feed_data:
@@ -194,12 +194,7 @@ def get_feed_data(did, feed_id):
             return None
 
         posts_data = []
- 
-        total_fake_news_prob = 0
-        total_sentiment = 0
-        total_controversy = 0
-        total_reliability = 0
-        
+
         total_emotion = {}
         total_fact_opinion = {"Objectif" : 0,
                             "Subjectif" : 0}
@@ -228,17 +223,6 @@ def get_feed_data(did, feed_id):
             sentiment_score = round(sentiment_result['score'] * 100)
             sentiment_label = sentiment_result['label'].capitalize()
             
-            # Générer des scores aléatoires pour chaque post
-            fake_news_prob = random.uniform(0, 100)
-            sentiment = random.uniform(-1, 1)
-            controversy = random.uniform(0, 100)
-            reliability = random.uniform(0, 100)
-
-            # Accumuler pour les moyennes
-            total_fake_news_prob += fake_news_prob
-            total_sentiment += sentiment
-            total_controversy += controversy
-            total_reliability += reliability
             
             # Stockage pour scores globaux
             
@@ -291,11 +275,7 @@ def get_feed_data(did, feed_id):
                     'sentiment': {
                         'score': sentiment_score,
                         'label': sentiment_label
-                    },
-                    'fake_news_probability': round(fake_news_prob, 1),
-                    'sentiment_score': round(sentiment, 2),
-                    'controversy_index': round(controversy, 1),
-                    'reliability_score': round(reliability, 1)
+                    }
                 }
             }
             posts_data.append(post_data)
@@ -305,11 +285,7 @@ def get_feed_data(did, feed_id):
         feed_stats = {
             'emotion_total' : sorted(total_emotion.items(), key=lambda x: x[1], reverse=True)[:5],
             'fact_opi_total' : total_fact_opinion,
-            'total_sentiment_model' : total_sentiment_model,
-            'fake_news_probability': round(total_fake_news_prob / num_posts, 1),
-            'sentiment_score': round(total_sentiment / num_posts, 2),
-            'controversy_index': round(total_controversy / num_posts, 1),
-            'reliability_score': round(total_reliability / num_posts, 1)
+            'total_sentiment_model' : total_sentiment_model
         }
 
         # Récupérer les informations du feed
