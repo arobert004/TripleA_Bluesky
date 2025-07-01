@@ -93,6 +93,22 @@ body {
 }
 
 
+/* LOADING */
+dotlottie-player#loading {
+    width: 200px;
+    height: 200px;
+    position: fixed; /* S'affiche par rapport à la fenêtre */
+    top: 20px;       /* Ajuste la position selon besoin */
+    right: 20px;
+    display: none;
+    background-size: contain;
+    cursor: wait;
+    z-index: 99999; /* Très élevé pour passer devant tout */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    }
+
 
 /* Animations pour les transitions */
 .transition-transform {

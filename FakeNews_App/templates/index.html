@@ -107,7 +107,14 @@
             </div>
         </section>
 
+
+
         <section id="verify1" class="verify-section">
+                <dotlottie-player id="loading"
+                src="https://lottie.host/50a4b7ac-0c14-4f46-8095-a77427a9f895/b6VzXn8mBE.lottie"
+                loop
+                autoplay
+              ></dotlottie-player>
             <div class="verify-content">
                 <h2 class="section-title">Vérifiez l'information avec un url d'un post ou d'un feed</h2>
                 <p class="section-subtitle">
@@ -115,7 +122,7 @@
                 </p>
                 <form class="verify-form" action="/analyze" method="POST">
                     <input type="text" name="post_url" class="verify-input" placeholder="Collez l'URL d'un post Bluesky ici" required>
-                    <button type="submit" class="verify-button">Analyser</button>
+                    <button type="submit" class="verify-button" onclick="loading();">Analyser</button>
                 </form>
             </div>
             <div class="verify-image">
@@ -131,7 +138,7 @@
                 </p>
                 <form class="verify-form" action="/tags_analysis" method="POST">
                     <input type="text" name="post_tag" class="verify-input" placeholder="Collez votre hashtag ou terme ici." required>
-                    <button type="submit" class="verify-button">Analyser</button>
+                    <button type="submit" class="verify-button" onclick="loading();">Analyser</button>
                 </form>
             </div>
             <div class="verify-image">
@@ -201,5 +208,9 @@
     
     <script src="{{ url_for('static', filename='smooth_scroll.js') }}"></script>
     <script src="{{ url_for('static', filename='flash_message.js') }}"></script>
+    <script src="{{ url_for('static', filename='loading.js') }}"></script>
+    <script
+    src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs"
+    type="module"></script>
 </body>
 </html>
