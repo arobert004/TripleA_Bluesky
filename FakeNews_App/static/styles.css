@@ -45,6 +45,55 @@ body {
 }
 
 
+/* Style pour flash emssage */
+
+.flashes {
+    list-style: none;
+    padding: 0;
+    margin: 80px auto 1rem; /* espace pour la navbar fixe */
+    max-width: 600px;
+    z-index: 9999;
+    position: relative;
+}
+
+.message_flash {
+    background: linear-gradient(135deg, #b23838, #b23838);
+    color: #fff;
+    padding: 1rem 1.5rem;
+    margin: 0.5rem 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1rem;
+    animation: fadeSlideIn 0.5s ease-out;
+    position: relative;
+    transition: all 0.3s ease;
+    opacity: 1;
+    transition: opacity 1s ease;
+}
+
+.message_flash:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.message_flash.fade-out {
+    opacity: 0;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
 /* Animations pour les transitions */
 .transition-transform {
     transition: transform 0.2s ease-in-out;

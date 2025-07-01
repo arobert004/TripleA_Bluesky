@@ -1,6 +1,6 @@
 #########   IMPORTS & SETUPS   ##########
 
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
 import os
 import requests
 import json
@@ -104,7 +104,6 @@ def get_post_data(handle, post_id):
             print(f"Erreur lors de l'extraction des images: {str(e)}")
             pass
         
-        
 
         # Obtenir les résultats des modèles
         try:
@@ -128,12 +127,62 @@ def get_post_data(handle, post_id):
             sentiment_score = round(sentiment_result['score'] * 100)
             sentiment_label = sentiment_result['label'].capitalize()
             
-            # Perplexity answer 
+            # Perplexity answer         
+            def extract_json_from_markdown(content):
+                # Supprime les balises ```json et ``` autour
+                match = re.search(r"```json\s*(\{.*?\})\s*```", content, re.DOTALL)
+                if match:
+                    return match.group(1)
+                # Si le markdown est absent, tenter avec un JSON brut
+                if content.strip().startswith("{") and content.strip().endswith("}"):
+                    return content.strip()
+                return None
+
+            API_KEY = r"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"
+            MODEL = "sonar"
             
-            perplexity_answer = {'fake_news_prob': 0.85,
-                'source1': 'https://www.france24.com/fr/%C3%A9co-tech/20250430-etats-unis-economie-pib-recule-donald-trump-accuse-joe-biden-droits-douane',
-                'source2': 'https://www.ofce.sciences-po.fr/blog2024/fr/20250428_CB/',
-                'source3': 'https://www.lemonde.fr/economie/article/2025/02/11/donald-trump-va-t-il-saborder-l-economie-americaine_6541097_3234.html'}
+            text = post['record']['text']
+            # text = r"Les personnes s'appelant Axel ont tendance à être gay"
+
+            prompt = (
+                'System: Tu es un détecteur de fake news, répond en JSON seulement.\n'
+                f'User: Vérifie ce texte : "{text}".\n'
+                '1. Donne la probabilité de fake news (valeur entre 0–1). '
+                '2. Donne les 3 sources web les plus pertinentes (URL). '
+                'dont au moins une source qui permet d infirmer si le texte est une fake news'
+                'Répond au format exact : '
+                '{"fake_news_prob": 0.78, "source1": "...", "source2": "...", "source3": "..."}'
+            )
+
+            resp = requests.post(
+                "https://api.perplexity.ai/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": MODEL,
+                    "messages": [
+                        {"role": "system", "content": "Tu es un détecteur de fake news, répond en JSON seulement."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.0,
+                    "max_tokens": 200
+                },
+                timeout=30
+            )
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"]["content"]
+
+            try:
+                perplexity_answer = json.loads(content)
+            except Exception:
+                perplexity_answer = json.loads(extract_json_from_markdown(content))
+            
+            # perplexity_answer = {'fake_news_prob': 0.85,
+            #     'source1': 'https://www.france24.com/fr/%C3%A9co-tech/20250430-etats-unis-economie-pib-recule-donald-trump-accuse-joe-biden-droits-douane',
+            #     'source2': 'https://www.ofce.sciences-po.fr/blog2024/fr/20250428_CB/',
+            #     'source3': 'https://www.lemonde.fr/economie/article/2025/02/11/donald-trump-va-t-il-saborder-l-economie-americaine_6541097_3234.html'}
                             
             
         except Exception as e:
@@ -589,7 +638,8 @@ def analyze():
         post_data = get_post_data(post_info[0], post_info[1])
         if post_data:
             return render_template('analysis.html', post=post_data)
-        
+  
+    flash(f"{post_url} n'est pas une URL valide. Réessayez.")    
     return redirect(url_for('index'))
 
 
@@ -610,6 +660,6 @@ def account_analysis(handle):
     return render_template('account_analysis.html', handle=handle, result=result)
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
 
 
