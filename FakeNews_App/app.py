@@ -630,6 +630,7 @@ def analyze():
         feed_data = get_feed_data(feed_info['did'], feed_info['feed_id'])
         if feed_data:
             return render_template('feed_analysis.html', feed=feed_data)
+        flash(f"{post_url} n'est pas une URL valide. Réessayez.")  
         return redirect(url_for('index'))
             
     # Si ce n'est pas un feed, traiter comme un post normal
