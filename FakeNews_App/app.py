@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np 
 import joblib
 import datetime
+from deep_translator import GoogleTranslator
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,6 +29,19 @@ pos_or_neg = pipeline("text-classification", model="cardiffnlp/twitter-roberta-b
 # Bot Detection
 bot_detection_model = joblib.load(os.path.join(BASE_DIR, "models", "bot_detector_model.joblib"))
 
+# Traduction en anglais 
+def translate_to_en (texte, lang):
+    
+    if lang == 'en' :
+        return texte
+    
+    else :
+        traducteur = GoogleTranslator(source = lang, target = 'en')
+        try :
+            texte_traduit  = traducteur.translate(texte)
+            return texte_traduit
+        except Exception as e:
+            return texte
 
 
 # APP
@@ -46,6 +60,7 @@ def extract_post_info(url):
     if match:
         return match.group(1), match.group(2)
     return None, None
+
 
 def extract_feed_info(url):
     """Extraire les informations d'un feed à partir de l'URL"""
@@ -72,6 +87,7 @@ def extract_feed_info(url):
         print(f"Erreur lors de l'extraction des informations du feed: {str(e)}")
     return None
 
+
 def get_post_data(handle, post_id):
     """Récupérer les données d'un post Bluesky"""
     try:
@@ -91,6 +107,13 @@ def get_post_data(handle, post_id):
             
         post = thread_data['thread']['post']
         
+        # Verification du langage, pour traduction si besoins 
+        if post['record']['langs'][0] == 'en' : 
+            text = post['record']['text']
+        else : 
+            text = translate_to_en(post['record']['text'], post['record']['langs'][0])
+        
+        
         # Extraire les images si présentes
         images = []
         try:
@@ -108,22 +131,28 @@ def get_post_data(handle, post_id):
         # Obtenir les résultats des modèles
         try:
             
-            # Récupérer les 3 émotions les plus probables
-            emotion_results = emotion_model(post['record']['text'])[0][:3]
+            # Récupérer les 3 ou 4 émotions les plus probables
+            emotion_results = emotion_model(text)[0][:4]
             
             emotion_results = [{
                 'label': r['label'],
                 'score': round(r['score'] * 100)
             } for r in emotion_results]
             
+                # Retirer neutral, redondant avec les autres modèles
+            for emotion in emotion_results : 
+                if emotion['label'] == 'neutral' : 
+                    emotion_results.remove(emotion)
+                
+            
             
             # Analyse fact/subjectif
-            fact_opinion_result = fact_or_opi(post['record']['text'])[0]
+            fact_opinion_result = fact_or_opi(text)[0]
             fact_opinion_score = round(fact_opinion_result['score'] * 100)
             fact_opinion_label = "Objectif" if fact_opinion_result['label'] == 'LABEL_1' else "Subjectif"
                 
             # Analyse sentiment
-            sentiment_result = pos_or_neg(post['record']['text'])[0]
+            sentiment_result = pos_or_neg(text)[0]
             sentiment_score = round(sentiment_result['score'] * 100)
             sentiment_label = sentiment_result['label'].capitalize()
             
@@ -140,9 +169,6 @@ def get_post_data(handle, post_id):
 
             API_KEY = r"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"
             MODEL = "sonar"
-            
-            text = post['record']['text']
-            # text = r"Les personnes s'appelant Axel ont tendance à être gay"
 
             prompt = (
                 'System: Tu es un détecteur de fake news, répond en JSON seulement.\n'
@@ -173,12 +199,15 @@ def get_post_data(handle, post_id):
             )
             resp.raise_for_status()
             content = resp.json()["choices"][0]["message"]["content"]
+            
+            
 
             try:
                 perplexity_answer = json.loads(content)
             except Exception:
                 perplexity_answer = json.loads(extract_json_from_markdown(content))
             
+
             # perplexity_answer = {'fake_news_prob': 0.85,
             #     'source1': 'https://www.france24.com/fr/%C3%A9co-tech/20250430-etats-unis-economie-pib-recule-donald-trump-accuse-joe-biden-droits-douane',
             #     'source2': 'https://www.ofce.sciences-po.fr/blog2024/fr/20250428_CB/',
@@ -186,13 +215,17 @@ def get_post_data(handle, post_id):
                             
             
         except Exception as e:
-            # print(f"sentim - Erreur lors de l'analyse des modèles : {str(e)}")
             # Valeurs par défaut en cas d'erreur
             emotion_results = []
             fact_opinion_score = 50
             fact_opinion_label = "Non disponible"
             sentiment_score = 50
             sentiment_label = "Non disponible"
+            perplexity_answer = {'fake_news_prob': 0.5,
+                'source1': 'https://www.france24.com/fr/%C3%A9co-tech/20250430-etats-unis-economie-pib-recule-donald-trump-accuse-joe-biden-droits-douane',
+                'source2': 'https://www.ofce.sciences-po.fr/blog2024/fr/20250428_CB/',
+                'source3': 'https://www.lemonde.fr/economie/article/2025/02/11/donald-trump-va-t-il-saborder-l-economie-americaine_6541097_3234.html'
+                            }
 
         
         return {
@@ -254,6 +287,7 @@ def get_feed_data(did, feed_id):
         for item in feed_data['feed']:
             post = item['post']
             
+            
             # Récupérer l'emotion la plus probable
             emotion_results = emotion_model(post['record']['text'])[0][:5]
             
@@ -261,6 +295,7 @@ def get_feed_data(did, feed_id):
                 'label': r['label'],
                 'score': round(r['score'] * 100)
             } for r in emotion_results]
+            
             
             # Analyse fact/subjectif
             fact_opinion_result = fact_or_opi(post['record']['text'])[0]
@@ -330,7 +365,7 @@ def get_feed_data(did, feed_id):
             posts_data.append(post_data)
 
         # Calculer les moyennes pour le feed entier
-        num_posts = len(posts_data)
+        # num_posts = len(posts_data)
         feed_stats = {
             'emotion_total' : sorted(total_emotion.items(), key=lambda x: x[1], reverse=True)[:5],
             'fact_opi_total' : total_fact_opinion,
@@ -393,6 +428,12 @@ def get_tag_datas(user_tag) :
                 'label': r['label'],
                 'score': round(r['score'] * 100)
             } for r in emotion_results]
+            
+                # Retirer "Neutral" redondant avec les modèles suivants
+            
+            for emotion in emotion_results : 
+                if emotion['label'] == 'neutral' : 
+                    emotion_results.remove(emotion)
             
             # Analyse fact/subjectif
             fact_opinion_result = fact_or_opi(post['record']['text'])[0]
@@ -470,7 +511,7 @@ def get_tag_datas(user_tag) :
             posts_data.append(post_data)
 
         # Calculer les moyennes pour le feed entier
-        num_posts = len(posts_data)
+        # num_posts = len(posts_data)
         allposts_tags_stats = {
             'emotion_total' : sorted(total_emotion.items(), key=lambda x: x[1], reverse=True)[:5],
             'fact_opi_total' : total_fact_opinion,
@@ -655,7 +696,7 @@ def tag_analyze():
 
 @app.route('/account_analysis/<handle>')
 def account_analysis(handle):
-    
+
     result = predict_bot_score(handle=handle)
     
     return render_template('account_analysis.html', handle=handle, result=result)
