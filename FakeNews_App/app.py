@@ -167,45 +167,56 @@ def get_post_data(handle, post_id):
                     return content.strip()
                 return None
 
-            API_KEY = r"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"
-            MODEL = "sonar"
+            try : 
+                
+                API_KEY = r"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"
+                MODEL = "sonar"
 
-            prompt = (
-                'System: Tu es un détecteur de fake news, répond en JSON seulement.\n'
-                f'User: Vérifie ce texte : "{text}".\n'
-                '1. Donne la probabilité de fake news (valeur entre 0–1). '
-                '2. Donne les 3 sources web les plus pertinentes (URL). '
-                'dont au moins une source qui permet d infirmer si le texte est une fake news'
-                'Répond au format exact : '
-                '{"fake_news_prob": 0.78, "source1": "...", "source2": "...", "source3": "..."}'
-            )
+                prompt = (
+                    'System: Tu es un détecteur de fake news, répond en JSON seulement.\n'
+                    f'User: Vérifie ce texte : "{text}".\n'
+                    '1. Donne la probabilité de fake news (valeur entre 0–1). '
+                    '2. Donne les 3 sources web les plus pertinentes (URL). '
+                    'dont au moins une source qui permet d infirmer si le texte est une fake news'
+                    'Répond au format exact : '
+                    '{"fake_news_prob": 0.78, "source1": "...", "source2": "...", "source3": "..."}'
+                        )
 
-            resp = requests.post(
-                "https://api.perplexity.ai/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": MODEL,
-                    "messages": [
-                        {"role": "system", "content": "Tu es un détecteur de fake news, répond en JSON seulement."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "temperature": 0.0,
-                    "max_tokens": 200
-                },
-                timeout=30
-            )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"]
-            
-            
+                resp = requests.post(
+                    "https://api.perplexity.ai/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {API_KEY}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "model": MODEL,
+                        "messages": [
+                            {"role": "system", "content": "Tu es un détecteur de fake news, répond en JSON seulement."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        "temperature": 0.0,
+                        "max_tokens": 200
+                    },
+                    timeout=30
+                )
+                resp.raise_for_status()
+                content = resp.json()["choices"][0]["message"]["content"]
+                
+                
 
-            try:
-                perplexity_answer = json.loads(content)
-            except Exception:
-                perplexity_answer = json.loads(extract_json_from_markdown(content))
+                try:
+                    perplexity_answer = json.loads(content)
+                except Exception:
+                    perplexity_answer = json.loads(extract_json_from_markdown(content))
+                    
+            except Exception as e : 
+                
+                print(e)
+                perplexity_answer = {'fake_news_prob': 0.5,
+                'source1': '-',
+                'source2': '-',
+                'source3': '-'
+                            }
             
 
             # perplexity_answer = {'fake_news_prob': 0.85,
@@ -216,16 +227,16 @@ def get_post_data(handle, post_id):
             
         except Exception as e:
             # Valeurs par défaut en cas d'erreur
+            print("Error", e)
             emotion_results = []
             fact_opinion_score = 50
             fact_opinion_label = "Non disponible"
             sentiment_score = 50
             sentiment_label = "Non disponible"
             perplexity_answer = {'fake_news_prob': 0.5,
-                'source1': 'https://www.france24.com/fr/%C3%A9co-tech/20250430-etats-unis-economie-pib-recule-donald-trump-accuse-joe-biden-droits-douane',
-                'source2': 'https://www.ofce.sciences-po.fr/blog2024/fr/20250428_CB/',
-                'source3': 'https://www.lemonde.fr/economie/article/2025/02/11/donald-trump-va-t-il-saborder-l-economie-americaine_6541097_3234.html'
-                            }
+                'source1': '-',
+                'source2': '-',
+                'source3': '-'}
 
         
         return {
@@ -702,6 +713,6 @@ def account_analysis(handle):
     return render_template('account_analysis.html', handle=handle, result=result)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host='0.0.0.0')
 
 
