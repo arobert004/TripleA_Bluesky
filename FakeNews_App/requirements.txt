@@ -9,3 +9,4 @@ transformers==4.48.3
 torch
 tf-keras
 tensorflow
+scikit-learn=1.4.2
